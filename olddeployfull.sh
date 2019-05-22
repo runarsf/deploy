@@ -203,6 +203,17 @@ function rest {
 	if [ ! -d ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting ]; then
 		git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting
 	fi
+	# install rufus-zsh-theme
+	if [ ! -f ~/.oh-my-zsh/custom/themes/rufus.zsh-theme ]; then
+		git clone https://github.com/runarsf/rufus-zsh-theme.git ~/.oh-my-zsh/custom/themes/rufus-zsh-theme
+		mv ~/.oh-my-zsh/custom/themes/rufus-zsh-theme/*.zsh-theme ~/.oh-my-zsh/custom/themes/
+		rm -rf ~/.oh-my-zsh/custom/themes/rufus-zsh-theme
+	fi
+	# install vundle plugins (defined in ~/.vimrc)
+	if [ ! -d ~/.vim/bundle/Vundle.vim ]; then
+		git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim
+		vim +PluginInstall +qall
+	fi
 	# firefox theme
 	if [ ! -d ~/.mozilla/firefox/*.default/chrome ]; then
 		git clone https://github.com/runarsf/chrome ~/.mozilla/firefox/*.default/chrome

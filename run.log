@@ -1,0 +1,57 @@
+[35mTIME[0;39m  220519-151847
+[31mERR[0;39m   The command 'zshTheme https://github.com/runarsf/rufus-zsh-theme' returned a non-zero code: 1
+[31mERR[0;39m   No custom function named shouldnotexist defined.
+[31mERR[0;39m   The command 'custom shouldnotexist' returned a non-zero code: 1
+[34mINFO[0;39m  Skipped #wget.
+[31mERR[0;39m   The command 'pacman -S wget' returned a non-zero code: 127
+[34mINFO[0;39m  Skipped wget.
+[31mERR[0;39m   The command 'yay -s wacom-utility' returned a non-zero code: 127
+[31mERR[0;39m   The command 'yay -s shouldstnotexist' returned a non-zero code: 127
+[31mERR[0;39m   ~/.fonts already exists and is a git repo.
+[31mERR[0;39m   The command 'custom fonts' returned a non-zero code: 1
+[35mTIME[0;39m  220519-152026
+[31mERR[0;39m   The command 'zshTheme https://github.com/runarsf/rufus-zsh-theme' returned a non-zero code: 1
+[31mERR[0;39m   No custom function named shouldnotexist defined.
+[31mERR[0;39m   The command 'custom shouldnotexist' returned a non-zero code: 1
+[34mINFO[0;39m  Skipped #wget.
+[31mERR[0;39m   The command 'pacman -S wget' returned a non-zero code: 127
+[34mINFO[0;39m  Skipped wget.
+[31mERR[0;39m   The command 'yay -s wacom-utility' returned a non-zero code: 127
+[31mERR[0;39m   The command 'yay -s shouldstnotexist' returned a non-zero code: 127
+[31mERR[0;39m   ~/.fonts already exists and is a git repo.
+[31mERR[0;39m   The command 'custom fonts' returned a non-zero code: 1
+[35mTIME[0;39m  220519-152138
+[34mINFO[0;39m  /home/runar/git/deploy
+[34mINFO[0;39m  /home/runar/git/deploy
+[34mINFO[0;39m  /home/runar/git/deploy
+[31mERR[0;39m   The command 'zshTheme https://github.com/runarsf/rufus-zsh-theme' returned a non-zero code: 1
+[31mERR[0;39m   No custom function named shouldnotexist defined.
+[31mERR[0;39m   The command 'custom shouldnotexist' returned a non-zero code: 1
+[34mINFO[0;39m  Skipped #wget.
+[31mERR[0;39m   The command 'pacman -S wget' returned a non-zero code: 127
+[34mINFO[0;39m  Skipped wget.
+[31mERR[0;39m   The command 'yay -s wacom-utility' returned a non-zero code: 127
+[31mERR[0;39m   The command 'yay -s shouldstnotexist' returned a non-zero code: 127
+[31mERR[0;39m   ~/.fonts already exists and is a git repo.
+[31mERR[0;39m   The command 'custom fonts' returned a non-zero code: 1
+[35mTIME[0;39m  220519-152246
+[34mINFO[0;39m  /home/runar/git/deploy
+[34mINFO[0;39m  /home/runar/git/deploy
+[34mINFO[0;39m  /home/runar/git/deploy
+[34mINFO[0;39m  Installed https://github.com/runarsf/rufus-zsh-theme from zsh-theme.
+[31mERR[0;39m   The command 'zshTheme https://github.com/runarsf/rufus-zsh-theme' returned a non-zero code: 1
+[31mERR[0;39m   No custom function named shouldnotexist defined.
+[31mERR[0;39m   The command 'custom shouldnotexist' returned a non-zero code: 1
+[34mINFO[0;39m  Skipped #wget.
+[31mERR[0;39m   The command 'pacman -S wget' returned a non-zero code: 127
+[34mINFO[0;39m  Skipped wget.
+[31mERR[0;39m   The command 'yay -s wacom-utility' returned a non-zero code: 127
+[31mERR[0;39m   The command 'yay -s shouldstnotexist' returned a non-zero code: 127
+[31mERR[0;39m   ~/.fonts already exists and is a git repo.
+[31mERR[0;39m   The command 'custom fonts' returned a non-zero code: 1
+[35mTIME[0;39m  220519-152438
+[34mINFO[0;39m  /home/runar/git/deploy
+[34mINFO[0;39m  /home/runar/git/deploy
+[34mINFO[0;39m  /home/runar/git/deploy
+[34mINFO[0;39m  Installed https://github.com/runarsf/rufus-zsh-theme from zsh-theme.
+[31mERR[0;39m   The command 'zshTheme https://github.com/runarsf/rufus-zsh-theme' returned a non-zero code: 1

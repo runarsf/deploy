@@ -1,4 +1,10 @@
 #!/bin/bash
+set -e
+#trap 'exit' ERR
+
+# TODO: deploy files
+# TODO: Take backup of linked files
+# TODO: Restore backup
 
 # Import colors
 source ./colors.sh
@@ -7,69 +13,167 @@ source ./colors.sh
 AURMAN="yay"
 GIT="git@github.com:runarsf/dotfiles.git"
 WHATIF=false
+PACKAGEFILE="packages.csv"
 
 debug() {
 	printf "${E_BOLD}Enabling debug mode.${RESET}\n"
-	# Exit immediately if a command exits with a non-zero status.
-	set -e
-	#trap 'exit' ERR
 	set -x
 	trap 'printf "%3d: " "$LINENO"' DEBUG
 }
 
+notify() {
+	[ "$1" = "INFO" ] && printf "${C_BLUE}INFO${RESET}  $2\n" | tee -a run.log
+	[ "$1" = "ERR" ] && printf "${C_RED}ERR${RESET}   $2\n" | tee -a run.log
+	[ "$1" = "NOOP" ] && printf "${C_GREEN}NOOP${RESET}  $2\n" | tee -a run.log
+	[ "$1" = "TIME" ] && printf "${C_MAGENTA}TIME${RESET}  $2\n" | tee -a run.log
+}
+
 helpme() {
 	printf "Usage: deploy.sh [args]\n"
-	printf " -h        Show this dialog.\n"
-	printf " -d        Enable debug mode.\n"
-	printf " -a ${C_LGRAY}[opt]${RESET}  Custom AUR manager.\n"
-	printf "    ${C_DGRAY}<inf>${RESET}  The manager used to install AUR packages. Needs to be invoked before ${C_BOLD}-p${RESET}.\n"
-	printf "    ${C_DGRAY}<def>${RESET}  $AURMAN\n"
-	printf " -p        Install packages from packages.csv.\n"
-	printf " -g ${C_LGRAY}[opt]${RESET}  Custom dotfiles git repository.\n"
-	printf "    ${C_DGRAY}<inf>${RESET}  A git url, either SSH or HTTPS.\n"
-	printf "    ${C_DGRAY}<def>${RESET}  $GIT\n"
-	printf " -f ${C_LGRAY}[opt]${RESET}  Custom dotfiles folder.\n"
-	printf "    ${C_DGRAY}<inf>${RESET}  Full or relative path to a folder.\n"
-	printf " -w        Emulates the PowerShell WhatIf flag, display modifications without making any changes.\n"
+	printf " -h          Show this dialog.\n"
+	printf " -d          Enable debug mode.\n"
+	printf " -a   ${C_LGRAY}[opt]${RESET}  Custom AUR manager.\n"
+	printf "      ${C_LGRAY}<inf>${RESET}  The manager used to install AUR packages. Needs to be invoked before ${C_BOLD}-p${RESET}.\n"
+	printf "      ${C_LGRAY}<def>${RESET}  $AURMAN\n"
+	printf " -p          Install packages from packages.csv.\n"
+	printf " -g   ${C_LGRAY}[opt]${RESET}  Custom dotfiles git repository.\n"
+	printf "      ${C_LGRAY}<inf>${RESET}  A git url, either SSH or HTTPS.\n"
+	printf "      ${C_LGRAY}<def>${RESET}  $GIT\n"
+	printf " -f   ${C_LGRAY}[opt]${RESET}  Custom packages.csv file.\n"
+	printf "      ${C_LGRAY}<inf>${RESET}  Full or relative path to a .csv file.\n"
+	printf "      ${C_LGRAY}<def>${RESET}  packages.csv\n"
+	printf " -w|n        Emulates the PowerShell WhatIf flag (no-op), display modifications without making any changes.\n"
+	printf " -i          Ignore errors.\n"
 	printf "\n"
 	printf "${C_BOLD}NB!${RESET} Make sure to invoke the arguments in the correct order.\n"
+	printf "The packages in packages.csv will be installed in chronological order.\n"
+	printf "If you want to install the AUR manager automatically, make sure it's at the top of your packages.csv file.\n"
 	printf "${C_LGRAY}[opt]${RESET} - The argument requires an option.\n"
-	printf "${C_DGRAY}<inf>${RESET} - Information about the option.\n"
-	printf "${C_DGRAY}<def>${RESET} - The default option value. If nothing is provided, the default is NULL.\n"
+	printf "${C_LGRAY}<inf>${RESET} - Information about the option.\n"
+	printf "${C_LGRAY}<def>${RESET} - The default option value. If nothing is provided, the default is NULL.\n"
 }
 
 packages() {
+	notify "TIME" $(date +"%d%m%y-%H%M%S")
 	while IFS=, read -r package location skip; do
 		[ "$package" = "package" ] && continue
+		[ ${package:0:1} = "#" ] && skip="true"
 		if [ "$skip" = "true" ]; then
-			[ "$WHATIF" = false ] && printf "Skipped ${C_CYAN}$package${RESET}.\n"
+			[ "$WHATIF" = false ] && notify "INFO" "Skipped $package."
 		else
 			if [ "$location" = "pacman" ]; then
-				[ "$WHATIF" = true ] && echo "pacman -S $package"
-				[ "$WHATIF" = false ] && echo "ACTUALLY pacman -S $package"
+				[ "$WHATIF" = true ] && notify "NOOP" "pacman -S $package"
+				if [ "$WHATIF" = false ]; then
+					pacman -S $package && notify "INFO" "Installed $package from $location." || notify "ERR" "The command 'pacman -S $package' returned a non-zero code: $?"
+				fi
 			elif [ "$location" = "aur" ]; then
-				[ "$WHATIF" = true ] && echo "$AURMAN -S $package"
-				[ "$WHATIF" = false ] && echo "ACTUALLY $AURMAN -S $package"
+				[ "$WHATIF" = true ] && notify "NOOP" "$AURMAN -S $package"
+				if [ "$WHATIF" = false ]; then
+					$AURMAN -s $package && notify "INFO" "Installed $package from $location." || notify "ERR" "The command '$AURMAN -s $package' returned a non-zero code: $?"
+				fi
 			elif [ "$location" = "custom" ]; then
-				echo "custom $package"
+				[ "$WHATIF" = true ] && notify "NOOP" "custom $package"
+				if [ "$WHATIF" = false ]; then
+					custom $package && notify "INFO" "Installed $package from $location." || notify "ERR" "The command 'custom $package' returned a non-zero code: $?"
+				fi
+			elif [ "$location" = "zsh-plugin" ]; then
+				[ "$WHATIF" = true ] && notify "NOOP" "zshPlugin $package"
+				if [ "$WHATIF" = false ]; then
+					zshPlugin $package && notify "INFO" "Installed $package from $location." || notify "ERR" "The command 'zshPlugin $package' returned a non-zero code: $?"
+				fi
+			elif [ "$location" = "zsh-theme" ]; then
+				[ "$WHATIF" = true ] && notify "NOOP" "zshTheme $package"
+				if [ "$WHATIF" = false ]; then
+					zshTheme $package && notify "INFO" "Installed $package from $location." || notify "ERR" "The command 'zshTheme $package' returned a non-zero code: $?"
+				fi
 			else
-				printf "${C_RED}Location ${E_BOLD}$location${RESET}${C_RED} is undefined. Skipping ${C_YELLOW}${E_BOLD}$package${RESET}.\n"
+				notify "ERR" "Location $location is undefined. Skipping $package."
 				continue
 			fi
-			[ "$WHATIF" = false ] && printf "Installed ${C_GREEN}${E_BOLD}$package${RESET} from ${E_BOLD}$location${RESET}.\n"
 		fi
-	done < packages.csv
+	done < $PACKAGEFILE
+}
+
+custom() {
+	if [ "$1" = "oh-my-zsh" ]; then
+		if [ ! -d "$HOME/.oh-my-zsh/" ]; then
+			{
+				{
+					sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
+				} || {
+					sh -c "$(wget https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh -O -)"
+				}
+			}
+		else
+			notify "ERR" "oh-my-zsh already installed."
+			return 1
+		fi
+	elif [ "$1" = "vundle" ]; then
+		if [ ! -d ~/.vim/bundle/Vundle.vim ]; then
+			mkdir -p ~/.vim/bundle
+			git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim
+			vim +PluginInstall +qall
+		else
+			notify "ERR" "Vundle already installed."
+			return 1
+		fi
+	elif [ "$1" = "fonts" ]; then
+		if [ ! -d ~/.fonts ]; then
+			git clone https://github.com/runarsf/fonts.git ~/.fonts
+			fc-cache -f -v
+		elif [ ! -d ~/.fonts/.git ]; then
+			git clone https://github.com/runarsf/fonts.git ~/.fontsrepo
+			mv ~/.fonts ~/.fontsrepo/.fonts_backup
+			mv ~/.fontsrepo ~/.fonts
+			mv ~/.fonts/.fonts_backup/*.* ~/.fonts/
+			fc-cache -f -v
+		else
+			notify "ERR" "~/.fonts already exists and is a git repo."
+			return 1
+		fi
+	else
+		notify "ERR" "No custom function named $1 defined."
+		return 1
+	fi
+}
+
+zshPlugin() {
+	mkdir -p ~/.oh-my-zsh/custom/plugins
+	basename=$(basename $1)
+	repo=${basename%.*}
+
+	[ ! -d ~/.oh-my-zsh/custom/plugins/$repo ] && git clone $1 ~/.oh-my-zsh/custom/plugins/$repo
+	[ -d ~/.oh-my-zsh/custom/plugins/$repo ] && notify "INFO" "zsh-plugin $repo already installed." && return 1
+}
+
+zshTheme() {
+	mkdir -p ~/.oh-my-zsh/custom/themes
+	basename=$(basename $1)
+	repo=${basename%.*}
+
+	git clone $1 ../$repo
+	for file in ../$repo/*.zsh-theme; do
+		notify "INFO" "$(pwd)"
+		#if [ ! -f ~/.oh-my-zsh/custom/themes/$file ]; then
+		#	ln -s ../$repo/$file $HOME/.oh-my-zsh/custom/themes/$file
+		#else
+		#	notify "ERR" "$file already linked."
+		#fi
+	done
+	return 0
 }
 
 # Parse arguments
-[ "$#" -lt 1 ] && printf "${C_RED}Too ${C_YELLOW}few ${C_RED}arguments!${RESET}\n" && exit 1
-while getopts dhpg:a:w option; do
+[ "$#" -lt 1 ] && notify "ERR" "${C_RED}Too ${C_YELLOW}few ${C_RED}arguments!${RESET}" && exit 1
+while getopts dhpg:a:wnif: option; do
 	case "${option}" in
 		d) debug;;
 		h) helpme;;
 		p) packages;;
 		a) AURMAN=${OPTARG};;
 		g) GIT=${OPTARG};;
-		w) WHATIF=true;;
+		w|n) WHATIF=true;;
+		i) set +e;;
+		f) PACKAGEFILE=${OPTARG};;
 	esac
 done
