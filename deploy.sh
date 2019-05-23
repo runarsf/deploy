@@ -7,7 +7,8 @@ set -e
 # TODO: Restore backup
 
 # Import colors
-source ./colors.sh
+SDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+source $SDIR/colors.sh
 
 # Set default variables
 AURMAN="yay"
@@ -22,10 +23,18 @@ debug() {
 }
 
 notify() {
-	[ "$1" = "INFO" ] && printf "${C_BLUE}INFO${RESET}  $2\n" | tee -a run.log
-	[ "$1" = "ERR" ] && printf "${C_RED}ERR${RESET}   $2\n" | tee -a run.log
-	[ "$1" = "NOOP" ] && printf "${C_GREEN}NOOP${RESET}  $2\n" | tee -a run.log
-	[ "$1" = "TIME" ] && printf "${C_MAGENTA}TIME${RESET}  $2\n" | tee -a run.log
+	[ "$1" = "INFO" ] && printf "${C_BLUE}INFO${RESET}    $2\n" | tee -a $SDIR/run.log
+	[ "$1" = "ERR" ] && printf "${C_RED}WARN${RESET}    $2\n" | tee -a $SDIR/run.log
+	[ "$1" = "NOOP" ] && printf "${C_GREEN}NOOP${RESET}    $2\n" | tee -a $SDIR/run.log
+	[ "$1" = "TIME" ] && printf "${C_MAGENTA}TIME${RESET}    $2\n" | tee -a $SDIR/run.log
+	if [ "$1" = "PROMPT" ]; then
+		printf "${C_CYAN}PROMPT${RESET}  $2 [y/N]"
+		read -p " " -n 1 -r </dev/tty
+		printf "\n"
+		if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+			return 1
+		fi
+	fi
 }
 
 helpme() {
@@ -151,25 +160,32 @@ zshTheme() {
 	basename=$(basename $1)
 	repo=${basename%.*}
 
-	git clone $1 ../$repo
+	git clone $1 ../$repo || notify "PROMPT" "$(cd .. && pwd)/$repo already exists. Continue with existing folder?" || return 1
+	PASSED=1
 	for file in ../$repo/*.zsh-theme; do
-		notify "INFO" "$(pwd)"
-		#if [ ! -f ~/.oh-my-zsh/custom/themes/$file ]; then
-		#	ln -s ../$repo/$file $HOME/.oh-my-zsh/custom/themes/$file
-		#else
-		#	notify "ERR" "$file already linked."
-		#fi
+		filename="${file##*/}"
+		if [ ! -f ~/.oh-my-zsh/custom/themes/$filename ]; then
+			echo ln -s $(cd .. && pwd)/$repo/$filename $HOME/.oh-my-zsh/custom/themes/$filename
+			PASSED=0
+		else
+			notify "ERR" "$filename already linked."
+		fi
 	done
-	return 0
+	return $PASSED
+}
+
+links() {
+	echo yes
 }
 
 # Parse arguments
 [ "$#" -lt 1 ] && notify "ERR" "${C_RED}Too ${C_YELLOW}few ${C_RED}arguments!${RESET}" && exit 1
-while getopts dhpg:a:wnif: option; do
+while getopts dhplg:a:wnif: option; do
 	case "${option}" in
 		d) debug;;
 		h) helpme;;
 		p) packages;;
+		l) links;;
 		a) AURMAN=${OPTARG};;
 		g) GIT=${OPTARG};;
 		w|n) WHATIF=true;;
