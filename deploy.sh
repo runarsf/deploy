@@ -5,6 +5,8 @@ set -e
 # TODO: deploy files
 # TODO: Take backup of linked files
 # TODO: Restore backup
+# TODO: --include-root to include root folder (default skipped)
+# TODO: Write layout documentation# TODO: Write layout documentation.
 
 # Import colors
 SDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
