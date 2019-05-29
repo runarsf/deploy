@@ -55,6 +55,8 @@ helpme() {
 	printf "      ${C_LGRAY}<def>${RESET}  packages.csv\n"
 	printf " -w|n        Emulates the PowerShell WhatIf flag (no-op), display modifications without making any changes.\n"
 	printf " -i          Ignore errors.\n"
+	printf " -x   ${C_LGRAY}[opt]${RESET}  Execute code from within the script, can be used to run functions.\n"
+	printf "      ${C_LGRAY}<inf>${RESET}  Bash code.\n"
 	printf "\n"
 	printf "${C_BOLD}NB!${RESET} Make sure to invoke the arguments in the correct order.\n"
 	printf "The packages in packages.csv will be installed in chronological order.\n"
@@ -176,21 +178,29 @@ zshTheme() {
 	return $PASSED
 }
 
-links() {
-	echo yes
+csvFile() {
+	basename=$(basename $GIT)
+	repo=${basename%.*}
+
+	[ ! -d ~/git/ ] && mkdir -p ~/git
+	git clone $GIT ~/git/$repo
+}
+
+tester() {
+	echo 'ayy'
 }
 
 # Parse arguments
 [ "$#" -lt 1 ] && notify "ERR" "${C_RED}Too ${C_YELLOW}few ${C_RED}arguments!${RESET}" && exit 1
-while getopts dhplg:a:wnif: option; do
+while getopts dhpg:a:wnif:x: option; do
 	case "${option}" in
 		d) debug;;
 		h) helpme;;
 		p) packages;;
-		l) links;;
 		a) AURMAN=${OPTARG};;
 		g) GIT=${OPTARG};;
 		w|n) WHATIF=true;;
+		x) ${OPTARG};;
 		i) set +e;;
 		f) PACKAGEFILE=${OPTARG};;
 	esac
