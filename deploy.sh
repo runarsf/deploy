@@ -13,8 +13,6 @@ if [ $EUID != 0 ]; then
   exit $?
 fi
 
-source ./lib/colours.sh
-
 prompt() {
   printf "$1 [y/N]"
   read -p " " -n 1 -r </dev/tty
@@ -33,6 +31,7 @@ fi
 
 include() {
   echo "loaded library from lib/library.sh" # check out .lib
+  # source ./lib/colours.sh
 }
 
 configs() {
