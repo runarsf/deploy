@@ -8,6 +8,11 @@ debug() {
   trap 'printf "%3d: " "$LINENO"' DEBUG
 }
 
+if [ $EUID != 0 ]; then
+  sudo "$0" "-${arg}"
+  exit $?
+fi
+
 source ./lib/colours.sh
 
 prompt() {
