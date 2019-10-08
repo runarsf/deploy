@@ -25,8 +25,18 @@ prompt() {
 sdir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 dir="$(dirname "${sdir}")"
 prompt "Detected dotfile directory ${dir}. Do you want to change it?" && read -p 'New directory: ' dir && dir=${dir%/}
-if ! [[ -d "$dir" ]]; then
+if ! [[ -d "${dir}" ]]; then
   echo 'Not a directory.'
+  exit 1
+fi
+pkg="${dir}/packages.csv"
+if [[ -f "${pkg}" ]]; then
+  prompt "Detected package database ${pkg}. Do you want to change it?" && reap -p 'New package database: ' pkg && pkg=${pkg%/}
+else
+  prompt "Could not detect package database, please enter a valid location."; read -p 'New package database: ' pkg && pkg=${pkg%/}
+fi
+if ! [[ -f "${pkg}" ]]; then
+  echo 'Not a valid file.'
   exit 1
 fi
 
@@ -53,4 +63,9 @@ configs() {
   done
 }
 
-configs
+install() {
+  while IFS=, read -r package prefix suffix; do
+    [ "$package" = "package" ] && continue
+    (set -x; sudo ${prefix}${package}${suffix})
+  done < $pkg
+}
