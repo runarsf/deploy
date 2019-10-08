@@ -1,12 +1,12 @@
 #!/bin/bash
 set -e
-#trap 'exit' ERR
 
-debug() {
-  echo "Enabling debug mode."
-  set -x
-  trap 'printf "%3d: " "$LINENO"' DEBUG
-}
+# DEBUG
+#set -x # show all commands being executed
+#trap 'printf "%3d: " "$LINENO"' DEBUG # show line numbers
+#trap 'echo "# $BASH_COMMAND"' DEBUG # best looking debug
+#set -o xtrace
+#(set -x; command) # create a subshell that will debug only one command
 
 if [ $EUID != 0 ]; then
   sudo "$0" "-${arg}"
@@ -22,7 +22,8 @@ prompt() {
   fi
 }
 
-dir="$(dirname "$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )")"
+sdir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+dir="$(dirname "${sdir}")"
 prompt "Detected dotfile directory ${dir}. Do you want to change it?" && read -p 'New directory: ' dir && dir=${dir%/}
 if ! [[ -d "$dir" ]]; then
   echo 'Not a directory.'
@@ -30,25 +31,23 @@ if ! [[ -d "$dir" ]]; then
 fi
 
 include() {
-  echo "loaded library from lib/library.sh" # check out .lib
-  # source ./lib/colours.sh
+  echo "Loading ${sdir}/lib/${1}"
+  source ${sdir}/lib/${1}
 }
+include colours.sh
 
 configs() {
   now="$(date '+%d%m%y-%H%M%S')"
+  (set -x; mkdir $sdir/backup/$now)
   cd ${dir}
   for f in * .*; do
     if ! [[ "$f" =~ ^(\.|\.\.|\.git|\.gitignore|README\.md|deploy|packages\.csv)$ ]]; then
-      if [[ "$f" == "root" ]]; then
-        echo "R: cp -rsv --backup=simple --suffix=".${now}" ${dir}/${f} /"
-        cp -rsv --backup=simple --suffix=".${now}" ${dir}/${f} /
+      if [[ "$f" == "root" ]]; then # could also run for-loop on ./root folder to get all files instead of /*
+        (set -x; cp -rsvu --backup=simple --suffix=".${now}" ${dir}/${f}/* /)
       elif [[ -d "$f" ]]; then
-        #echo "cp -rsv --backup=numbered ${dir}/${f} ${HOME}/${f}" # recursively symlink verbose with numbered-backup("~1~")
-        echo "D: cp -rsv --backup=simple --suffix=".${now}" ${dir}/${f} ${HOME}/${f}" # recursive symlink verbose fixed-backup("date-time")
-        cp -rsv --backup=simple --suffix=".${now}" ${dir}/${f} ${HOME}/${f}
+        (set -x; cp -rsvu --backup=simple --suffix=".${now}" ${dir}/${f} ${HOME}/${f})
       else
-        echo "F: cp -sv --backup=simple --suffix=".${now}" ${dir}/${f} ${HOME}/${f}"
-        cp -sv --backup=simple --suffix=".${now}" ${dir}/${f} ${HOME}/${f}
+        (set -x; cp -svu --backup=simple --suffix=".${now}" ${dir}/${f} ${HOME}/${f})
       fi
     fi
   done
