@@ -45,7 +45,7 @@ configs() {
       if [[ "$f" == "root" ]]; then # could also run for-loop on ./root folder to get all files instead of /*
         (set -x; cp -rsvu --backup=simple --suffix=".${now}" ${dir}/${f}/* /)
       elif [[ -d "$f" ]]; then
-        (set -x; cp -rsvu --backup=simple --suffix=".${now}" ${dir}/${f} ${HOME}/${f})
+        (set -x; cp -rsvu --backup=simple --suffix=".${now}" ${dir}/${f} ${HOME}/)
       else
         (set -x; cp -svu --backup=simple --suffix=".${now}" ${dir}/${f} ${HOME}/${f})
       fi
