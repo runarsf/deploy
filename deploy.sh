@@ -29,16 +29,6 @@ if ! [[ -d "${dir}" ]]; then
   echo 'Not a directory.'
   exit 1
 fi
-pkg="${dir}/packages.csv"
-if [[ -f "${pkg}" ]]; then
-  prompt "Detected package database ${pkg}. Do you want to change it?" && reap -p 'New package database: ' pkg && pkg=${pkg%/}
-else
-  prompt "Could not detect package database, please enter a valid location."; read -p 'New package database: ' pkg && pkg=${pkg%/}
-fi
-if ! [[ -f "${pkg}" ]]; then
-  echo 'Not a valid file.'
-  exit 1
-fi
 
 include() {
   echo "Loading ${sdir}/lib/${1}"
@@ -64,8 +54,21 @@ configs() {
 }
 
 install() {
+  pkg="${dir}/packages.csv"
+  if [[ -f "${pkg}" ]]; then
+    prompt "Detected package database ${pkg}. Do you want to change it?" && read -p 'New package database: ' pkg && pkg=${pkg%/}
+  else
+    prompt "Could not detect package database, please enter a valid location."; read -p 'New package database: ' pkg && pkg=${pkg%/}
+  fi
+  if ! [[ -f "${pkg}" ]]; then
+    echo 'Not a valid file.'
+    exit 1
+  fi
+
   while IFS=, read -r package prefix suffix; do
     [ "$package" = "package" ] && continue
-    (set -x; sudo ${prefix}${package}${suffix})
+    (set -x; ${prefix}${package}$(${suffix}))
   done < $pkg
 }
+
+install
