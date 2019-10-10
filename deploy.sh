@@ -54,7 +54,7 @@ configs() {
 }
 
 install() {
-  pkg="${dir}/packages.csv"
+  pkg="${dir}/packages.json"
   if [[ -f "${pkg}" ]]; then
     prompt "Detected package database ${pkg}. Do you want to change it?" && read -p 'New package database: ' pkg && pkg=${pkg%/}
   else
@@ -65,10 +65,24 @@ install() {
     exit 1
   fi
 
-  while IFS=, read -r package prefix suffix; do
-    [ "$package" = "package" ] && continue
-    (set -x; ${prefix}${package}$(${suffix}))
-  done < $pkg
+  command -v jq >/dev/null 2>&1 \
+  && jq='jq' \
+  || jq="${sdir}/backup/jq" \
+  && [ ! -f ${sdir}/backup/jq ] \
+  && curl -L https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 --output ${sdir}/backup/jq \
+  && chmod +x ${sdir}/backup/jq
+
+  packages=$(${jq} -r ".packages | .[] | .package" ${pkg})
+  prefix=$(${jq} -r ".prefix" ${pkg})
+  [ -z "$prefix" ] && unset prefix
+  suffix=$(${jq} -r ".suffix" ${pkg})
+  [ -z "$suffix" ] && unset suffix
+  while read -r package; do
+    #(set -x; apt install -y ${package})
+    (set -x; ${prefix}${package}${suffix})
+  done <<< ${packages}
+
+  #(set -x; ${prefix}${package}$(${suffix}))
 }
 
 install
