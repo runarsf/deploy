@@ -68,8 +68,8 @@ POSITIONAL=()
 while [[ $# -gt 0 ]]; do
   case "$1" in
     -d|--dotfiles)
-      # TODO: Allow relative path name by converting relative to full
-      dotfiles=${2%/}
+      dotfiles=$(readlink -f "$2")
+      dotfiles=${dotfiles%/}
       if ! [[ -d "${dotfiles}" ]]; then
         echo "${dotfiles}: No such directory."
         exit 1
@@ -81,7 +81,7 @@ while [[ $# -gt 0 ]]; do
       shift # past value
       ;;
     -p|--packages)
-      config="$2"
+      config=$(readlink -f "$2")
       if [[ -d "${dotfiles}" ]] && ! [[ "${config}" == *\/* ]] && [ -f "${dotfiles}/${config}" ]; then
         config="${dotfiles}/${config}"
       elif ! [[ -f "${config}" ]]; then
@@ -92,15 +92,15 @@ while [[ $# -gt 0 ]]; do
       shift # past argument
       shift # past value
       ;;
+    -n|--no-backup)
+      backup=n
+      shift # past argument
+      ;;
     -e|--echo)
       [ ! -z "$2" ] && echo "$2" \
         || echo "No value"
       shift
       shift
-      ;;
-    -n|--no-backup)
-      backup=n
-      shift # past argument
       ;;
     *) # unknown option
       POSITIONAL+=("$1") # save it in an array for later
