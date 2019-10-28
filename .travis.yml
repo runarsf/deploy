@@ -13,4 +13,4 @@ after_success: |
   cd dotfiles &&
   git submodule update --recursive --init &&
   cd deploy &&
-  ./deploy.sh --dotfiles ../ --packages ../packages-ubuntu.json
+  ./deploy.sh --dotfiles ../ --packages ../deploy-ubuntu.json
