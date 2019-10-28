@@ -1,4 +1,6 @@
 # deploy
+[![Build Status](https://travis-ci.org/runarsf/deploy.svg?branch=master)](https://travis-ci.org/runarsf/deploy)
+
 A bash script made for deploying and managing [dotfiles](https://github.com/runarsf/dotfiles) from a folder or git repo.
 
 ### Installation
