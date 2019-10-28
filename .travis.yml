@@ -1,0 +1,16 @@
+language: generic
+sudo: required
+notifications:
+  email: false
+
+addons:
+  apt:
+    packages:
+      - git
+
+after_success: |
+  git clone https://github.com/runarsf/dotfiles.git &&
+  cd dotfiles &&
+  git submodule update --recursive --init &&
+  cd deploy &&
+  ./deploy.sh --dotfiles ../ --packages ../packages-ubuntu.json
