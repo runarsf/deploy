@@ -20,30 +20,8 @@ git submodule update --recursive --init
 ```
 
 ### Usage
-
 ```bash
-Usage: deploy [options] [commands]
-
-Options:
-
-  -d, --dotfiles <directory>                 Dotfiles directory.
-  -p, --packages <file>                      Package candidate file.
-  --quiet                                    Don't return anything to stdout.
-
-Commands:
-
-  list [options] <object>                    List an array of objects from the vault.
-  create [options] <object> [encodedJson]    Create an object in the vault.
-  config <setting> <value>                   Configure CLI settings.
-  update                                     Check for updates.
-
-  Examples:
-
-    deploy packages
-    deploy configs
-```
-
-```bash
+./deploy.sh --help
 ./deploy.sh --dotfiles /path/to/dotfiles --packages /path/to/packages.json
 ```
 

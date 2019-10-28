@@ -1,4 +1,4 @@
-language: generic
+language: ubuntu
 sudo: required
 notifications:
   email: false
