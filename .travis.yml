@@ -1,16 +1,13 @@
-language: ubuntu
 sudo: required
-notifications:
-  email: false
+services:
+- docker
 
-addons:
-  apt:
-    packages:
-      - git
+git:
+  submodules: false
 
-after_success: |
-  git clone https://github.com/runarsf/dotfiles.git &&
-  cd dotfiles &&
-  git submodule update --recursive --init &&
-  cd deploy &&
-  ./deploy.sh --dotfiles ../ --packages ../deploy-ubuntu.json
+#before_install:
+#  - sed -i 's/git@github.com:/https:\/\/github.com\//' .gitmodules
+#  - git submodule update --init --recursive
+
+script:
+- docker build .
