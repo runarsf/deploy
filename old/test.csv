@@ -1,9 +1,0 @@
-package,location,skip
-https://github.com/runarsf/rufus-zsh-theme,zsh-theme,false
-shouldnotexist,custom,false
-#wget,custom,false
-wget,pacman,false
-wget,pacman,true
-wacom-utility,aur,false
-shouldstnotexist,aur,false
-fonts,custom,false

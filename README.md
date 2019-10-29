@@ -1,7 +1,8 @@
 # deploy
 [![Build Status](https://travis-ci.org/runarsf/deploy.svg?branch=master)](https://travis-ci.org/runarsf/deploy)
 
-A bash script made for deploying and managing [dotfiles](https://github.com/runarsf/dotfiles) from a folder or git repo.
+A bash script made for deploying and managing [dotfiles](https://github.com/runarsf/dotfiles) from a folder or git repo.<br />
+Deploy is under active development and currently capable of deploying all (dot)files from a folder (see [Folder structure](https://github.com/runarsf/deploy#folder-structure)), and packages from a json file (see [Package file](https://github.com/runarsf/deploy#package-file)).
 
 ### Installation
 
@@ -18,29 +19,31 @@ git submodule add https://github.com/runarsf/deploy
 cd deploy
 ./deploy.sh --dotfiles ../ --packages ../packages.json
 # Updating submodule
-git submodule update --recursive --init
+git submodule update --init --recursive
 ```
 
 ### Usage
 ```bash
 ./deploy.sh --help
-./deploy.sh --dotfiles /path/to/dotfiles --packages /path/to/packages.json
 ```
 
 ### Folder structure
-`dotfiles/` represents the root of the dotfiles repository.
+`dotfiles/` represents the root of the dotfiles repository.<br />
+`->` represents a symbolic link.<br />
+`!>` represents ignored entries.<br />
+No suffix represents no action.
 
 ```bash
 dotfiles/
-├── ./ -> ignored
-├── ../ -> ignored
-├── .git/ -> ignored
-├── .gitignore -> ignored
-├── README.md -> ignored
-├── deploy*.json -> ignored
-├── .travis.yml -> ignored
-├── .sharenix.json -> ignored
-├── deploy/ -> submodule, ignored
+├── ./ !>
+├── ../ !>
+├── .git/ !>
+├── .gitignore !>
+├── README.md !>
+├── deploy*.json !>
+├── .travis.yml !>
+├── .sharenix.json !>
+├── deploy/ !> submodule
 ├── file -> /home/user/file
 ├── folder/
 │   ├── folder/
@@ -52,7 +55,7 @@ dotfiles/
     └── file -> /file
 ```
 
-### `deploy.json`
+### Package file
 ```json
 {
   "update": "apt update",
@@ -65,14 +68,12 @@ dotfiles/
     {"package": "firefox"},
     {
       "package": "thefuck",
+      "prefix": "DEBIAN_FRONTEND=noninteractive apt-get install -y",
       "suffix": "--install-recommends"
     }
   ]
 }
 ```
-
-### TODO
-  - Add support for all listed packages (except zsh-theme, handled by zsh plugin manager); https://github.com/runarsf/dotfiles/blob/e34b75ec7d447cf948a7e42d488908a432f55553/packages.csv
 
 > **deploy** © [runarsf](https://github.com/runarsf) · Author and maintainer.<br>
 > Released under the [OSL-3.0](https://opensource.org/licenses/OSL-3.0) [License](https://github.com/runarsf/deploy/blob/master/LICENSE).

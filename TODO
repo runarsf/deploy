@@ -1,0 +1,22 @@
+- [x] Add TODO file.
+- [x] All variables should be in curly brackets and double-quotes.
+- [x] Colorized help.
+- [x] Add include function.
+- [] Travis-CI test.
++ [] Use runarsf/dotfiles as a testing ground.
++ [] Make sure no user-interaction is needed when running package installation.
++ [] Docker container for Travis-CI test.
+- [] Use `test` instead of [] and [[]] (except regex). Also use `-a` and `-o` instead of && and ||.
+- [] Place sudo check in own function, --help should not require sudo.
++ [] Everything before sudo check is run will run again after sudo check reruns with sudo.
+- [] Don't execute commands on argument passing and take in all arguments before running.
+- [] If `curl` doesn't exist; use `wget`, if `wget` doesn't exist; do something else.
+- [] Only shift past argument if argument is passed.
+- [] Add support for git repo deployment.
+- [] Add support for copying instead of symlinking.
+- [] Add `deploy --add {file}` for adding files to dotfiles repo.
+- [] Make deploy configurable.
+- [] Add support for all listed packages (except zsh-theme, handled by zsh plugin manager); https://github.com/runarsf/dotfiles/blob/e34b75ec7d447cf948a7e42d488908a432f55553/packages.csv
+- [] CLI tool.
++ [] MAN page.
+- [] Add debug option that takes placeholder arg.

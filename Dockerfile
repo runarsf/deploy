@@ -17,14 +17,13 @@ WORKDIR "/home/$DOCKER_USER"
 
 #RUN yes | sudo unminimize \
 RUN sudo apt-get update \
- && sudo apt-get install -y \
+ && DEBIAN_FRONTEND=noninteractive sudo apt-get install -y \
     git \
     curl \
  && sudo rm -rf /var/lib/apt/lists/*
 
-RUN mkdir /home/$DOCKER_USER/git \
+RUN mkdir -p /home/$DOCKER_USER/git \
  && git clone https://github.com/runarsf/dotfiles /home/$DOCKER_USER/git/dotfiles \
  && cd /home/$DOCKER_USER/git/dotfiles \
- && git submodule update --recursive --init \
- && cd /home/$DOCKER_USER/git/dotfiles/deploy \
- && ./deploy.sh --dotfiles ../ --packages ../deploy-ubuntu.json
+ && git submodule update --init --recursive \
+ && /home/$DOCKER_USER/git/dotfiles/deploy/deploy.sh --dotfiles . --packages deploy-ubuntu.json full
