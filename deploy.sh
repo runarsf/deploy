@@ -77,6 +77,7 @@ deployConfigs() {
 }
 
 installPackages() {
+  export DEBIAN_FRONTEND=noninteractive
   # If jq doesn't exist; download it.
   # Assign the jq executable to $jq.
   command -v jq >/dev/null 2>&1 \
