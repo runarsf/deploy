@@ -15,15 +15,19 @@ RUN apt-get update \
 USER "$DOCKER_USER"
 WORKDIR "/home/$DOCKER_USER"
 
-#RUN yes | sudo unminimize \
 RUN sudo apt-get update \
  && DEBIAN_FRONTEND=noninteractive sudo apt-get install -y \
     git \
     curl \
  && sudo rm -rf /var/lib/apt/lists/*
 
-RUN mkdir -p /home/$DOCKER_USER/git \
- && git clone https://github.com/runarsf/dotfiles /home/$DOCKER_USER/git/dotfiles \
- && cd /home/$DOCKER_USER/git/dotfiles \
- && git submodule update --init --recursive \
- && /home/$DOCKER_USER/git/dotfiles/deploy/deploy.sh --dotfiles . --packages deploy-ubuntu.json full
+COPY --chown=deploy build /home/$DOCKER_USER/dotfiles
+COPY --chown=deploy . /home/$DOCKER_USER/dotfiles/deploy
+WORKDIR /home/$DOCKER_USER/dotfiles/deploy
+RUN sudo /home/$DOCKER_USER/dotfiles/deploy/deploy.sh --dotfiles ../ --packages ../deploy.json full
+
+#RUN mkdir -p /home/$DOCKER_USER/git \
+  #&& git clone https://github.com/runarsf/dotfiles /home/$DOCKER_USER/git/dotfiles \
+  #&& cd /home/$DOCKER_USER/git/dotfiles \
+  #&& git submodule update --init --recursive \
+  #&& /home/$DOCKER_USER/git/dotfiles/deploy/deploy.sh --dotfiles . --packages deploy-ubuntu.json full

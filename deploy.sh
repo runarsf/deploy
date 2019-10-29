@@ -64,7 +64,7 @@ deployConfigs() {
   now="$(date '+%d%m%y-%H%M%S')"
   cd ${dotfiles}
   for f in * .*; do
-    if ! [[ "$f" =~ ^(\.|\.\.|\.git|\.gitignore|README\.md|deploy|deploy*\.json|\.travis\.yml|\.sharenix\.json)$ ]]; then
+    if ! [[ "$f" =~ ^(\.|\.\.|\.git|\.gitignore|README\.md|deploy|deploy*\.json|\.travis\.yml|\.sharenix\.json|Dockerfile)$ ]]; then
       if test "${f}" = "root"; then # could also run for-loop on ./root folder to get all files instead of /*
         (set -x; eval "cp --recursive --symbolic-link --verbose --update ${backup} ${dotfiles}/${f}/* /")
       elif test -d "${f}"; then
@@ -82,10 +82,10 @@ installPackages() {
   # Assign the jq executable to $jq.
   command -v jq >/dev/null 2>&1 \
     && jq='jq' \
-    || jq="${__dir}/build/jq" \
-    && test ! -f "${__dir}/build/jq" \
-    && curl --location https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 --output "${__dir}/build/jq" \
-    && chmod +x "${__dir}/build/jq"
+    || jq="${__dir}/jq" \
+    && test ! -f "${__dir}/jq" \
+    && curl --location https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 --output "${__dir}/jq" \
+    && chmod +x "${__dir}/jq"
 
   update=$(${jq} --raw-output ".update // empty" ${config})
   prefix=$(${jq} --raw-output ".prefix // empty" ${config})
@@ -139,6 +139,11 @@ while [[ $# -gt 0 ]]; do
       shift;;
     configs)
       deployConfigs='true'
+      shift;;
+    full)
+      requireSudo='true'
+      deployConfigs='true'
+      installPackages='true'
       shift;;
     *) # unknown option
       POSITIONAL+=("${1}") # save it in an array for later

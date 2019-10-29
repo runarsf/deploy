@@ -1,0 +1,11 @@
+{
+  "update": "apt-get update",
+  "prefix": "apt-get -yq install",
+  "suffix": "--no-install-recommends",
+  "packages": [
+    {"package": "git"},
+    {"package": "curl"},
+    {"package": "tmux"},
+    {"package": "vim"}
+  ]
+}
