@@ -47,6 +47,7 @@ helpme() {
 	  -d${C_LGRAY},${RESET} --dotfiles <${C_RED}directory${RESET}>  Dotfiles directory.
 	  -p${C_LGRAY},${RESET} --packages <${C_RED}file${RESET}>       Package candidate file.
 	  -n${C_LGRAY},${RESET} --no-backup             Disable backup.
+	  -e${C_LGRAY},${RESET} --ignore-error          Don't exit script on error.
 
 	${C_GREEN}Examples:${C_YELLOW}
 	  deploy --packages ../deploy.json
@@ -60,7 +61,7 @@ deployConfigs() {
   now="$(date '+%d%m%y-%H%M%S')"
   cd ${dotfiles}
   for f in * .*; do
-    if ! [[ "$f" =~ ^(\.|\.\.|\.git|\.gitignore|README\.md|deploy|deploy*\.json|\.travis\.yml|\.sharenix\.json|Dockerfile)$ ]]; then
+    if ! [[ "$f" =~ ^(\.|\.\.|\.git|\.gitignore|README\.md|deploy*\.ini|deploy*.ini|deploy*.json|deploy*\.json|\.travis\.yml|\.sharenix\.json|Dockerfile)$ ]]; then
       if test "${f}" = "root"; then # could also run for-loop on ./root folder to get all files instead of /*
         (set -x; eval "sudo cp --recursive --symbolic-link --verbose --update ${backup} ${dotfiles}/${f}/* /")
       elif test -d "${f}"; then
@@ -73,36 +74,30 @@ deployConfigs() {
 }
 
 installPackages() {
-  export DEBIAN_FRONTEND=noninteractive
-  # If jq doesn't exist; download it.
-  # Assign the jq executable to $jq.
-  #if command -v jq >/dev/null 2>&1; then
-  if type 'jq' >/dev/null 2>&1; then
-    jq='jq'
-  else
-    jq="${__dir}/jq"
-    if test ! -f "${__dir}/jq"; then
-      sudo curl --location https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 --output "${__dir}/jq"
-      sudo chmod +x "${__dir}/jq"
+  declare -g packages=()
+  # Automatically trims leading whitespace (which is good)
+  while IFS='' read line; do
+    if [[ "${line}" == \;* ]] || test -z "${line}" -o "${line}" = " " || (test -z "${section}" && ! [[ "${line}" == \[*] ]]); then # Ignore comments and lines before the first section
+      continue
+    elif [[ "${line}" == \[*] ]]; then # Set section
+      section=$(sed 's/^\[\(.*\)\]/\1/' <<< "${line}") # Extract section name from section string
+    elif [[ "${line}" == *=* ]]; then
+      while IFS='=' read var val; do
+        declare "$var[$section]=$val"
+      done <<< "${line}"
+    else #elif [[ "${line}" == *\ * ]]; then
+      packages+=( "${line}" )
     fi
-  fi
+  done < "${config}"
 
-  update=$(${jq} --raw-output ".update // empty" ${config})
-  prefix=$(${jq} --raw-output ".prefix // empty" ${config})
-  suffix=$(${jq} --raw-output ".suffix // empty" ${config})
-
-  packages=$(${jq} --raw-output ".packages | .[] | .package" ${config})
-  prefixes=$(${jq} --raw-output ".packages | .[] | .prefix" ${config})
-  suffixes=$(${jq} --raw-output ".packages | .[] | .suffix" ${config})
-  csv=$(paste <(echo "$packages") <(echo "$prefixes") <(echo "$suffixes") --delimiters ',')
-
-
-  (set -x; export DEBIAN_FRONTEND=noninteractive; ${update})
-  while IFS=, read -r pkg pre suf; do
-    [[ "${pre}" = "null" ]] && pre=${prefix}
-    [[ "${suf}" = "null" ]] && suf=${suffix}
-    (set -x; export DEBIAN_FRONTEND=noninteractive; ${pre} ${pkg} ${suf})
-  done <<< ${csv}
+  export DEBIAN_FRONTEND=noninteractive
+  for index in ${!packages[@]}; do
+    if [[ "${packages[$index]}" == *\ * ]]; then
+      ${packages[$index]}
+    else
+       ${prefix[settings]} ${packages[$index]} ${suffix[settings]}
+    fi
+  done
 }
 
 test "${#}" -lt "1" && "${0}" --help
@@ -138,6 +133,9 @@ while [[ $# -gt 0 ]]; do
     -n|--no-backup)
       backup=''
       shift;;
+    -e|--ignore-error)
+      ignoreError='true'
+      shift;;
     *) # unknown option
       POSITIONAL+=("${1}") # save it in an array for later
       shift;;
@@ -152,6 +150,7 @@ if test -n "${1}"; then
   exit 1
 fi
 
+test -n "${ignoreError}"     && set +o errexit
 test -n "${requireSudo}"     && elevate
 test -n "${deployConfigs}"   && deployConfigs
 test -n "${installPackages}" && installPackages

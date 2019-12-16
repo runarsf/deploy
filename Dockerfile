@@ -18,8 +18,13 @@ USER "$DOCKER_USER"
 WORKDIR "/home/$DOCKER_USER"
 
 RUN sudo apt-get update \
- && sudo apt-get install -y git curl jq \
+ && sudo apt-get install -y git curl \
  && sudo rm -rf /var/lib/apt/lists/*
+
+#COPY --chown=deploy build /home/$DOCKER_USER/dotfiles
+#COPY --chown=deploy . /home/$DOCKER_USER/dotfiles/deploy
+#WORKDIR /home/$DOCKER_USER/dotfiles/deploy
+#RUN sudo /home/$DOCKER_USER/dotfiles/deploy/deploy.sh --dotfiles ../ --packages ../deploy.json full
 
 RUN git clone $DOTFILES_REPO /home/$DOCKER_USER/dotfiles
 
