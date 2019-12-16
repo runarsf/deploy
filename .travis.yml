@@ -10,4 +10,4 @@ git:
 #  - git submodule update --init --recursive
 
 script:
-- docker build  -f build/Dockerfile .
+- docker build -f build/Dockerfile .

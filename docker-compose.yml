@@ -1,0 +1,17 @@
+version: "3"
+
+services:
+  deploy:
+    image: deploy
+    hostname: deploy
+    container_name: deploy
+    restart: "no"
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        DOCKER_USER: deploy
+        DOTFILES_REPO: "https://github.com/runarsf/dotfiles.git"
+    environment:
+      TZ: Europe/Oslo
+    command: "tail -f /dev/null"
