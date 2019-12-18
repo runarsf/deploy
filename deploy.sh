@@ -48,6 +48,7 @@ helpme() {
 	  -p${C_LGRAY},${RESET} --packages <${C_RED}file${RESET}>       Package candidate file.
 	  -n${C_LGRAY},${RESET} --no-backup             Disable backup.
 	  -e${C_LGRAY},${RESET} --ignore-error          Don't exit script on error.
+	  -v${C_LGRAY},${RESET} --verbose               Enable some verbose features.
 
 	${C_GREEN}Examples:${C_YELLOW}
 	  deploy --packages ../deploy.json
@@ -59,15 +60,15 @@ helpme() {
 
 deployConfigs() {
   now="$(date '+%d%m%y-%H%M%S')"
-  cd ${dotfiles}
+  cd "${dotfiles}"
   for f in * .*; do
-    if ! [[ "$f" =~ ^(\.|\.\.|\.git|\.gitignore|README\.md|deploy*\.ini|deploy*.ini|deploy*.json|deploy*\.json|\.travis\.yml|\.sharenix\.json|Dockerfile)$ ]]; then
+    if ! [[ "$f" =~ ^(\.|\.\.|\.git|\.gitignore|README\.md|deploy.*\.json|deploy.*\.ini|\.travis\.yml|\.sharenix\.json|Dockerfile)$ ]]; then
       if test "${f}" = "root"; then # could also run for-loop on ./root folder to get all files instead of /*
-        (set -x; eval "sudo cp --recursive --symbolic-link --verbose --update ${backup} ${dotfiles}/${f}/* /")
+        (test -n "${verbose}" && set -x; eval "sudo cp --recursive --symbolic-link --verbose --update ${backup} ${dotfiles}/${f}/* /")
       elif test -d "${f}"; then
-        (set -x; eval "cp --recursive --symbolic-link --verbose --update ${backup} ${dotfiles}/${f} ${HOME}/")
+        (test -n "${verbose}" && set -x; eval "cp --recursive --symbolic-link --verbose --update ${backup} ${dotfiles}/${f} ${HOME}/")
       else
-        (set -x; eval "cp --symbolic-link --verbose --update ${backup} ${dotfiles}/${f} ${HOME}/${f}")
+        (test -n "${verbose}" && set -x; eval "cp --symbolic-link --verbose --update ${backup} ${dotfiles}/${f} ${HOME}/${f}")
       fi
     fi
   done
@@ -78,14 +79,18 @@ installPackages() {
   # Automatically trims leading whitespace (which is good)
   while IFS='' read line; do
     if [[ "${line}" == \;* ]] || test -z "${line}" -o "${line}" = " " || (test -z "${section}" && ! [[ "${line}" == \[*] ]]); then # Ignore comments and lines before the first section
+      test -n "${verbose}" && echo "Comment: ${line}"
       continue
     elif [[ "${line}" == \[*] ]]; then # Set section
       section=$(sed 's/^\[\(.*\)\]/\1/' <<< "${line}") # Extract section name from section string
+      test -n "${verbose}" && echo "Section: ${line} (${section})"
     elif [[ "${line}" == *=* ]]; then
       while IFS='=' read var val; do
+        test -n "${verbose}" && echo "Var: ${line} (Var:${var} Val:${val} Section:${section})"
         declare "$var[$section]=$val"
       done <<< "${line}"
     else #elif [[ "${line}" == *\ * ]]; then
+      test -n "${verbose}" && echo "Package: ${line}"
       packages+=( "${line}" )
     fi
   done < "${config}"
@@ -93,9 +98,11 @@ installPackages() {
   export DEBIAN_FRONTEND=noninteractive
   for index in ${!packages[@]}; do
     if [[ "${packages[$index]}" == *\ * ]]; then
-      ${packages[$index]}
+      test -n "${verbose}" && echo "${packages[$index]}"
+      echo "${packages[$index]}"
     else
-       ${prefix[settings]} ${packages[$index]} ${suffix[settings]}
+      test -n "${verbose}" && echo "${prefix[settings]} ${packages[$index]} ${suffix[settings]}"
+      echo "${prefix[settings]} ${packages[$index]} ${suffix[settings]}"
     fi
   done
 }
@@ -135,6 +142,9 @@ while [[ $# -gt 0 ]]; do
       shift;;
     -e|--ignore-error)
       ignoreError='true'
+      shift;;
+    -v|--verbose)
+      verbose='true'
       shift;;
     *) # unknown option
       POSITIONAL+=("${1}") # save it in an array for later
