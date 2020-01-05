@@ -2,11 +2,13 @@
 - [x] All variables should be in curly brackets and double-quotes.
 - [x] Colorized help.
 - [x] Add include function.
+- [x] Use `test` instead of [] and [[]] (except regex). Also use `-a` and `-o` instead of && and ||.
+- [] Add prompt to notify about backups (must be possible to disable).
+- [] Convert to heredoc with instructions instead of .ini file.
 - [] Travis-CI test.
 + [] Use runarsf/dotfiles as a testing ground.
 + [] Make sure no user-interaction is needed when running package installation.
 + [] Docker container for Travis-CI test.
-- [] Use `test` instead of [] and [[]] (except regex). Also use `-a` and `-o` instead of && and ||.
 - [] Place sudo check in own function, --help should not require sudo.
 + [] Everything before sudo check is run will run again after sudo check reruns with sudo.
 - [] Don't execute commands on argument passing and take in all arguments before running.

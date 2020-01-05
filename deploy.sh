@@ -62,7 +62,7 @@ deployConfigs() {
   now="$(date '+%d%m%y-%H%M%S')"
   cd "${dotfiles}"
   for f in * .*; do
-    if ! [[ "$f" =~ ^(\.|\.\.|\.git|\.gitignore|README\.md|deploy.*\.json|deploy.*\.ini|\.travis\.yml|\.sharenix\.json|Dockerfile)$ ]]; then
+    if ! [[ "$f" =~ ^(\.|\.\.|\.git|\.gitignore|README.*|.*deploy.*|instructions\.sh||\.travis\.yml|\.sharenix\.json|Dockerfile|docker-compose\.y.*ml)$ ]]; then
       if test "${f}" = "root"; then # could also run for-loop on ./root folder to get all files instead of /*
         (test -n "${verbose}" && set -x; eval "sudo cp --recursive --symbolic-link --verbose --update ${backup} ${dotfiles}/${f}/* /")
       elif test -d "${f}"; then
@@ -75,36 +75,19 @@ deployConfigs() {
 }
 
 installPackages() {
-  declare -g packages=()
-  # Automatically trims leading whitespace (which is good)
-  while IFS='' read line; do
-    if [[ "${line}" == \;* ]] || test -z "${line}" -o "${line}" = " " || (test -z "${section}" && ! [[ "${line}" == \[*] ]]); then # Ignore comments and lines before the first section
-      test -n "${verbose}" && echo "Comment: ${line}"
-      continue
-    elif [[ "${line}" == \[*] ]]; then # Set section
-      section=$(sed 's/^\[\(.*\)\]/\1/' <<< "${line}") # Extract section name from section string
-      test -n "${verbose}" && echo "Section: ${line} (${section})"
-    elif [[ "${line}" == *=* ]]; then
-      while IFS='=' read var val; do
-        test -n "${verbose}" && echo "Var: ${line} (Var:${var} Val:${val} Section:${section})"
-        declare "$var[$section]=$val"
-      done <<< "${line}"
-    else #elif [[ "${line}" == *\ * ]]; then
-      test -n "${verbose}" && echo "Package: ${line}"
-      packages+=( "${line}" )
-    fi
-  done < "${config}"
-
-  export DEBIAN_FRONTEND=noninteractive
-  for index in ${!packages[@]}; do
-    if [[ "${packages[$index]}" == *\ * ]]; then
-      test -n "${verbose}" && echo "${packages[$index]}"
-      echo "${packages[$index]}"
-    else
-      test -n "${verbose}" && echo "${prefix[settings]} ${packages[$index]} ${suffix[settings]}"
-      echo "${prefix[settings]} ${packages[$index]} ${suffix[settings]}"
-    fi
-  done
+  source "${config}"
+  test -n "${prefix}" && prefix="${prefix} "
+  test -n "${suffix}" && suffix=" ${suffix}"
+  while read instruction; do
+    case "${instruction}" in
+      *\ *)
+        (set -e; $verbose; eval "${instruction}")
+        ;;
+      *)
+        (set -e; $verbose; eval "${prefix}${instruction}${suffix}")
+        ;;
+    esac
+  done <<< "${INSTRUCTIONS}"
 }
 
 test "${#}" -lt "1" && "${0}" --help
@@ -144,7 +127,7 @@ while [[ $# -gt 0 ]]; do
       ignoreError='true'
       shift;;
     -v|--verbose)
-      verbose='true'
+      verbose='set -x'
       shift;;
     *) # unknown option
       POSITIONAL+=("${1}") # save it in an array for later

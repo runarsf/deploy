@@ -8,16 +8,15 @@ Deploy is under active development and currently capable of deploying all (dot)f
 
 ```bash
 # Simple ver.
-cd /path/to/dotfiles
 git clone https://github.com/runarsf/deploy
 cd deploy
-./deploy.sh --dotfiles ../ --packages ../packages.json
+./deploy.sh --dotfiles ~/dotfiles --packages ~/dotfiles/instructions.sh
 
 # Using submodules, easier updates
-cd /path/to/dotfiles
+cd dotfiles
 git submodule add https://github.com/runarsf/deploy
 cd deploy
-./deploy.sh --dotfiles ../ --packages ../packages.json
+./deploy.sh --dotfiles ../ --packages ../instructions.sh
 # Updating submodule
 git submodule update --init --recursive
 ```
@@ -29,51 +28,35 @@ git submodule update --init --recursive
 
 ### Folder structure
 `dotfiles/` represents the root of the dotfiles repository.<br />
-`->` represents a symbolic link.<br />
-`!>` represents ignored entries.<br />
-No suffix represents no action.
+`{from} -> {to}` represents a symbolic link.<br />
+`{entry} !> {reason}` represents ignored entries.<br />
+No suffix represents no action (recursive deployment).
 
 ```bash
 dotfiles/
-├── ./ !>
-├── ../ !>
-├── .git/ !>
-├── .gitignore !>
-├── README.md !>
-├── deploy*.json !>
-├── .travis.yml !>
-├── .sharenix.json !>
-├── deploy/ !> submodule
-├── file -> /home/user/file
+├── ./                  !> working directory
+├── ../                 !> parent directory
+├── .git/               !> git repository data
+├── .gitignore          !> ignored git entries
+├── README*             !> information file
+├── *deploy*            !> used to deploy packages
+├── instructions.sh     !> used to deploy packages
+├── .travis.yml         !> travis-ci build file
+├── .sharenix.json      !> contains private token
+├── deploy/             !> submodule
+├── Dockerfile          !> docker build information
+├── docker-compose.y*ml !> docker-compose build information
+├── file                -> ~/file
 ├── folder/
 │   ├── folder/
-│   └── file -> /home/user/folder/file
+│   │   └── folder/
+│   └── file            -> ~/folder/file
 └── root/
     ├── folder/
     │   ├── folder/
-    │   └── file -> /folder/file
-    └── file -> /file
+    │   └── file        -> /folder/file
+    └── file            -> /file
 ```
 
-### Package file
-```json
-{
-  "update": "apt update",
-  "prefix": "apt install -y",
-  "suffix": "--no-install-recommends",
-  "packages": [
-    {"package": "zsh"},
-    {"package": "git"},
-    {"package": "curl"},
-    {"package": "firefox"},
-    {
-      "package": "thefuck",
-      "prefix": "DEBIAN_FRONTEND=noninteractive apt-get install -y",
-      "suffix": "--install-recommends"
-    }
-  ]
-}
-```
-
-> **deploy** © [runarsf](https://github.com/runarsf) · Author and maintainer.<br>
+> **deploy** © [runarsf](https://github.com/runarsf) · Author and maintainer.<br />
 > Released under the [OSL-3.0](https://opensource.org/licenses/OSL-3.0) [License](https://github.com/runarsf/deploy/blob/master/LICENSE).
